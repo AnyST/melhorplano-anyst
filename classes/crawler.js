@@ -42,8 +42,6 @@ module.exports = class Crawler {
     parsePlan($) {
         const planInformationParsed = this.parsePlanInformation($),
               planBenefitsParsed = this.parsePlanBenefits($)
-        
-        console.log(planBenefitsParsed)
 
         return {...planInformationParsed, benefits: planBenefitsParsed}
     }
@@ -56,17 +54,25 @@ module.exports = class Crawler {
      */
     parsePlanInformation($) {
         // Tratar textos da estrutura HTML
-        var textos = this.capturarNodosDeTexto($)        
+        var t = $.root().text() // Acessa a raiz superior e captura todo conteúdo de texto
+                .split('\n') // Retorna um Array com strings usando como separador o '\n'
+                .map(v => v.trim()) // Retorna um Array removendo todas as tabulações
+                .filter(v => v != '') // Retorna um Array cujos elementos não sejam uma string vazia 
+                .filter(v => /[\w]/i.test(v)) // Retorna um Array cujos elementos possuam caracteres alfabéticos
         
         // * Extrair a quantidade total de internet que o plano oferece
         /* * Extrair a quantidade total de minutos
                  * lembre-se de extrair o texto com informações de minutos e identificar se encontra um texto com minutos ilimitados(utilizar -1 nesse caso) ou um número com a quantidade de minutos
-        */        
+        */
         // * Extrair o preço do plano
-                
+        var preco = t.filter(v => v.includes('R$')) // Retorna um Array o elemento possuir a string 'R$'
+                .map(v => v.slice(v.indexOf('R$'),9)) // Retorna um Array no intervalo especificado cujo elemento possua a String 'R$'
+                .filter(v => v!='') // Retorna um Array removendo as string vazias 
+                .join('') // Junta todos os elementos de um Array dentro de em uma string
+        
         return {
            plan_name: '',
-           internet: '',
+           internet: preco,
            minutes: '',
         }
     }
@@ -88,17 +94,5 @@ module.exports = class Crawler {
             .map((i,e) => $(e).text())
             .get()
             .filter((v,i,a) => a.indexOf(v) == i)
-    }
-    
-    /**
-     * Obtém os textos de todos os nodos obtidos pelo Cheerio. 
-     * @param $ Instância do Cheerio.
-     * @return Listagem de nodos de texto obtidos.
-     */   
-    capturarNodosDeTexto($, ref='*') {
-        return $ (ref).contents().toArray()// Obtem os filhos, contém os objetos do tipo texto
-        .reduce((x,v) => x.concat(v), []) // Concatena cada sublista obtida       
-        .filter(v => v['type'] === 'text' && v['data'].trim() != '') // Filtra objetos do tipo 'text' e que possui texto relevante
-        .map(v => v['data'].trim()) // Remove as impurezas dos textos (\t\n)
     }
 }
