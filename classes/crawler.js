@@ -1,15 +1,14 @@
 "use strict";
 
-const fs = require('fs')
-const path = require('path')
-const cheerio = require('cheerio')
+const fs = require('fs'),
+      path = require('path'),
+      cheerio = require('cheerio')
 
 module.exports = class Crawler {
     constructor() {
-        const html = this.retrieveHtml()
-        const $ = this.parseHtmlToCheerio(html)
-    
-        const parsedPlan = this.parsePlan($)
+        const html = this.retrieveHtml(),
+              $ = this.parseHtmlToCheerio(html),    
+              parsedPlan = this.parsePlan($)
         
         return parsedPlan
     }
@@ -20,8 +19,7 @@ module.exports = class Crawler {
      * @return html source content
      */
     retrieveHtml() {
-        const html = fs.readFileSync('./assets/plano.html', 'utf-8')
-        return html
+        return fs.readFileSync('./assets/plano.html', 'utf-8')
     }
 
     /**
@@ -32,8 +30,7 @@ module.exports = class Crawler {
      * @return html parsed to cheerio
      */
     parseHtmlToCheerio(html) {
-        const $ = cheerio.load(html)
-        return $
+        return cheerio.load(html)
     }
 
     /**
@@ -43,13 +40,10 @@ module.exports = class Crawler {
      * @return json formatted plan
      */
     parsePlan($) {
-        const planInformationParsed = this.parsePlanInformation($)
-        const planBenefitsParsed = this.parsePlanBenefits($)
+        const planInformationParsed = this.parsePlanInformation($),
+              planBenefitsParsed = this.parsePlanBenefits($)
 
-        return {
-            ...planInformationParsed,
-            benefits: planBenefitsParsed
-        }
+        return {...planInformationParsed, benefits: planBenefitsParsed}
     }
 
     /**
@@ -59,15 +53,18 @@ module.exports = class Crawler {
      * @return formatted JSON
      */
     parsePlanInformation($) {
-        $('.notMobile').find('ul').first().each((i, element) => {
-            const item = $(element).text().trim()
-        })
-
-        // TODO: Fill this object with the parsed data
+        
+        // * Extrair a quantidade total de internet que o plano oferece
+        /* * Extrair a quantidade total de minutos
+                 * lembre-se de extrair o texto com informações de minutos e identificar se encontra um texto com minutos ilimitados(utilizar -1 nesse caso) ou um número com a quantidade de minutos
+        */        
+        // * Extrair o preço do plano
+        // * Extrair uma lista de outros benefícios como "SMS ilimitados", "Roaming", "Celular Reserva", etc        
+        
         return {
            plan_name: '',
            internet: '',
-           minutes: '',
+           minutes: ''
         }
     }
 
@@ -78,11 +75,32 @@ module.exports = class Crawler {
      * @return array with all benefits
      */
     parsePlanBenefits($) {
-        $('.notMobile').find('ul').last().each((i, element) => {
-            const item = $(element).text().trim()
-        })
+        // Tratar textos a partir do nível mais alto
+        var textos = this.captarNodosDeTexto($),
 
-        // TODO: Fill this with the benefits parsed
-        return []
+        // Tratar os textos relativos a benefícios do plano
+        beneficios = textos;
+
+        return beneficios;
+    }
+    
+    /**
+     * Obtém todos os nodos de texto de uma estrutura Cheerio
+     * e seus respectivos filhos. É recomendado passar o objeto
+     * de nível mais alto de uma página ($.root()) para que a 
+     * extração tenha maior alcance. 
+     */    
+    captarNodosDeTexto($) {
+        let r = []
+        $('*').each((i,e) => {
+            r.push(e['children']
+                // filtra apenas objetos cujo tipo seja 'text'
+                .filter((v,i) => v['type'] === 'text')
+            )
+        })
+        
+        
+        console.log('Teste: ', r)
+        return r;
     }
 }
