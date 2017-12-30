@@ -53,14 +53,17 @@ module.exports = class Crawler {
      * @return formatted JSON
      */
     parsePlanInformation($) {
+        // Tratar textos da estrutura HTML
+        var textos = this.capturarNodosDeTexto($)
+        
+        console.log('Teste: ',textos)        
         
         // * Extrair a quantidade total de internet que o plano oferece
         /* * Extrair a quantidade total de minutos
                  * lembre-se de extrair o texto com informações de minutos e identificar se encontra um texto com minutos ilimitados(utilizar -1 nesse caso) ou um número com a quantidade de minutos
         */        
         // * Extrair o preço do plano
-        // * Extrair uma lista de outros benefícios como "SMS ilimitados", "Roaming", "Celular Reserva", etc        
-        
+                
         return {
            plan_name: '',
            internet: '',
@@ -75,32 +78,35 @@ module.exports = class Crawler {
      * @return array with all benefits
      */
     parsePlanBenefits($) {
-        // Tratar textos a partir do nível mais alto
-        var textos = this.captarNodosDeTexto($),
+        // Tratar textos relativos a benefícios do plano
+        // * Extrair uma lista de outros benefícios como "SMS ilimitados", "Roaming", "Celular Reserva", 
+        
+        var listas = this.capturarListagens($)
 
-        // Tratar os textos relativos a benefícios do plano
-        beneficios = textos;
-
-        return beneficios;
+        console.log('Teste: ',listas)
+        
+        return
     }
     
     /**
-     * Obtém todos os nodos de texto de uma estrutura Cheerio
-     * e seus respectivos filhos. É recomendado passar o objeto
-     * de nível mais alto de uma página ($.root()) para que a 
-     * extração tenha maior alcance. 
-     */    
-    captarNodosDeTexto($) {
-        let r = []
-        $('*').each((i,e) => {
-            r.push(e['children']
-                // filtra apenas objetos cujo tipo seja 'text'
-                .filter((v,i) => v['type'] === 'text')
-            )
-        })
+     * Obtém os textos de todos os nodos obtidos pelo Cheerio. 
+     * @param $ Instância do Cheerio.
+     * @return Listagem de nodos de texto obtidos.
+     */   
+    capturarNodosDeTexto($) {
+        return $('*').toArray()        
+        .map(v => v['children']) // Obtem os filhos, contém os objetos do tipo texto
+        .reduce((x,v) => x.concat(v), []) // Concatena cada sublista obtida       
+        .filter(v => v['type'] === 'text' && v['data'].trim() != '') // Filtra objetos do tipo 'text' e que possui texto relevante
+        .map(v => v['data'].trim()) // Remove as impurezas dos textos (\t\n)
+    }
         
-        
-        console.log('Teste: ', r)
-        return r;
+    /**
+     * Obtém estruturas de texto que estão em listagens.
+     * @param $ Instância do Cheerio.
+     * @return Listagem de nodos de listas e seus itens.
+     */        
+    capturarListagens($) {
+        return        
     }
 }
