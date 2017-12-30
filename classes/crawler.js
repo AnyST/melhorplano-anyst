@@ -42,6 +42,8 @@ module.exports = class Crawler {
     parsePlan($) {
         const planInformationParsed = this.parsePlanInformation($),
               planBenefitsParsed = this.parsePlanBenefits($)
+        
+        console.log(planBenefitsParsed)
 
         return {...planInformationParsed, benefits: planBenefitsParsed}
     }
@@ -54,9 +56,7 @@ module.exports = class Crawler {
      */
     parsePlanInformation($) {
         // Tratar textos da estrutura HTML
-        var textos = this.capturarNodosDeTexto($)
-        
-        console.log('Teste: ',textos)        
+        var textos = this.capturarNodosDeTexto($)        
         
         // * Extrair a quantidade total de internet que o plano oferece
         /* * Extrair a quantidade total de minutos
@@ -67,7 +67,7 @@ module.exports = class Crawler {
         return {
            plan_name: '',
            internet: '',
-           minutes: ''
+           minutes: '',
         }
     }
 
@@ -80,12 +80,14 @@ module.exports = class Crawler {
     parsePlanBenefits($) {
         // Tratar textos relativos a benefícios do plano
         // * Extrair uma lista de outros benefícios como "SMS ilimitados", "Roaming", "Celular Reserva", 
-        
-        var listas = this.capturarListagens($)
-
-        console.log('Teste: ',listas)
-        
-        return
+        return $('ul')
+            .filter((i,e) => $(e)
+                .prev().text()
+                .includes('Benef'))
+            .children()
+            .map((i,e) => $(e).text())
+            .get()
+            .filter((v,i,a) => a.indexOf(v) == i)
     }
     
     /**
@@ -93,20 +95,10 @@ module.exports = class Crawler {
      * @param $ Instância do Cheerio.
      * @return Listagem de nodos de texto obtidos.
      */   
-    capturarNodosDeTexto($) {
-        return $('*').toArray()        
-        .map(v => v['children']) // Obtem os filhos, contém os objetos do tipo texto
+    capturarNodosDeTexto($, ref='*') {
+        return $ (ref).contents().toArray()// Obtem os filhos, contém os objetos do tipo texto
         .reduce((x,v) => x.concat(v), []) // Concatena cada sublista obtida       
         .filter(v => v['type'] === 'text' && v['data'].trim() != '') // Filtra objetos do tipo 'text' e que possui texto relevante
         .map(v => v['data'].trim()) // Remove as impurezas dos textos (\t\n)
-    }
-        
-    /**
-     * Obtém estruturas de texto que estão em listagens.
-     * @param $ Instância do Cheerio.
-     * @return Listagem de nodos de listas e seus itens.
-     */        
-    capturarListagens($) {
-        return        
     }
 }
