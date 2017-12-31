@@ -73,14 +73,20 @@ module.exports = class Crawler {
                 .join() // Junta todos os elementos de um Array dentro de em uma string
         
         // * Extrair a quantidade total de internet que o plano oferece
+        
         /* * Extrair a quantidade total de minutos
                  * lembre-se de extrair o texto com informações de minutos e identificar se encontra um texto com minutos ilimitados(utilizar -1 nesse caso) ou um número com a quantidade de minutos
         */
+        let tempo = t.filter(v => v.includes('ilimitado')) // Verifica se a string 'ilimitado' foi encontrada e retorna em um Array com '-1', ou
+                ? -1 : t.filter(v => /[0-9]/.teste(v)) // Retorna um Array cujos elementos possuam caracteres numéricos
+                        .filter(v => v.includes('hora') // Verifica se a string 'hora' foi encontrada
+                                || v.includes('minuto')) // ou se a string 'minuto' foi encontrada e retorna em um Array
         
         return {
-           plan_name: nome,
-           internet: preco,
-           minutes: '',
+            plan_name: nome,
+            price: preco,
+            internet: '',
+            minutes: tempo,
         }
     }
 
