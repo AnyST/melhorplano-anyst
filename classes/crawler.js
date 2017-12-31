@@ -73,6 +73,12 @@ module.exports = class Crawler {
                 .join() // Junta todos os elementos de um Array dentro de em uma string
         
         // * Extrair a quantidade total de internet que o plano oferece
+        let internet = this.parsePlanBenefits($)
+                        .filter(v => /[0-9]*(Y|Z|E|P|T|G|M|K|)B/.test(v)) // Retorna um Array que captura a quantidade de internet em uma grandeza de bytes
+                        .map(v => v.slice(
+                                v.split('').findIndex(v => /[0-9]/.test(v)),
+                                v.split('').findIndex(v => /(Y|Z|E|P|T|G|M|K|)B/.test(v))+1))
+                        .join() // Junta todos os elementos de um Array dentro de uma string
         
         /* * Extrair a quantidade total de minutos
                  * lembre-se de extrair o texto com informações de minutos e identificar se encontra um texto com minutos ilimitados(utilizar -1 nesse caso) ou um número com a quantidade de minutos
@@ -85,7 +91,7 @@ module.exports = class Crawler {
         return {
             plan_name: nome,
             price: preco,
-            internet: '',
+            internet: internet,
             minutes: tempo,
         }
     }
@@ -101,8 +107,7 @@ module.exports = class Crawler {
         // * Extrair uma lista de outros benefícios como "SMS ilimitados", "Roaming", "Celular Reserva", 
         return $('ul')
             .filter((i,e) => $(e)
-                .prev().text()
-                .includes('Benef'))
+                .prev().text().trim() != '')
             .children()
             .map((i,e) => $(e).text())
             .get()
